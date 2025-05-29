@@ -12,11 +12,12 @@ from scipy.stats import multivariate_normal
 from sklearn.mixture import GaussianMixture
 
 ################################################################
-#                  Question 1 - Part 1                         #
+#                          Question 1                          #
 ################################################################ 
 
+
 #--- Loop through training datasets
-N_Loop=[100, 1000, 10000, 20000]
+N_Loop=[20000]
 Figure_COUNT=1
 for N in N_Loop:
     Figure_COUNT=Figure_COUNT+20
@@ -51,21 +52,23 @@ for N in N_Loop:
     p=np.array([0.6, 0.4]); #p[0]=class 0 prior, p[1]=class 1 prior
     ##--------------##
     
+    
     #--- Generate Validate Dataset based on class conditional pdfs ## 
     N_random_numbers_Validate=np.random.random(N_Validate);
     label_Validate=np.zeros(N_Validate);
-    X_Validate = np.zeros((n, N_Validate))
-    L_Counter_Validate=np.zeros(C);
-    Data_Set_L_Validate=np.zeros((C,N_Validate,n))
-    Sum_CL_Validate=np.zeros(C)
-    
     for i in range(0,N_Validate):
         if N_random_numbers_Validate[i]<=p[0]:
             label_Validate[i]=0;
         else:
             label_Validate[i]=1;
+    Sum_CL_Validate=np.zeros(C)  
     for i in range(0,C):      
         Sum_CL_Validate[i]=sum(label_Validate==i); #Number of data points with the given class label
+    
+    X_Validate = np.zeros((n, N_Validate))
+    L_Counter_Validate=np.zeros(C);
+    
+    Data_Set_L_Validate=np.zeros((C,N_Validate,n))
     
     def generateDataFromGMM(N,alpha,Mu,Sigma):
         # Generates N vector samples from the specified mixture of Gaussians
@@ -100,17 +103,17 @@ for N in N_Loop:
     #--- Generate Training Dataset based on class conditional pdfs ## 
     N_random_numbers=np.random.random(N);
     label=np.zeros(N);
-    X = np.zeros((n, N))
-    L_Counter=np.zeros(C);
-    Sum_CL=np.zeros(C)  
-    
     for i in range(0,N):
         if N_random_numbers[i]<=p[0]:
             label[i]=0;
         else:
             label[i]=1;
+    Sum_CL=np.zeros(C)  
     for i in range(0,C):      
         Sum_CL[i]=sum(label==i); #Number of data points with the given class label
+    
+    X = np.zeros((n, N))
+    L_Counter=np.zeros(C);
     
     Data_Set_L=np.zeros((C,N,n))
     Data_Set_L[0,0:int(Sum_CL[0]),:]= np.transpose(generateDataFromGMM(int(Sum_CL[0]),Weight,Mu_0[:,:],Sigma_0[:,:,:]))
@@ -135,6 +138,7 @@ for N in N_Loop:
     plt.ylabel("X2")
     plt.xlim((Low_Lim, Up_Lim))
     plt.ylim((Low_Lim, Up_Lim))
+    
     #---------- END Setup the Given vectors and matrices --------#
     
     #Define Loss Matrix
@@ -153,8 +157,10 @@ for N in N_Loop:
     
     #---- Calculate Discriminant Score ----#
     discriminantScore=np.zeros(N);
+    
     for i in range(0,N):
-         discriminantScore[i] = math.log(pxgivenL[1,i])-math.log(pxgivenL[0,i]); # If discriminantScore > gamma, D=1, otherwise, D=0
+         discriminantScore[i] = math.log(pxgivenL[1,i])-math.log(pxgivenL[0,i]);
+         # If discriminantScore > gamma, D=1, otherwise, D=0
     #- END Calculate Discriminant Score --#
     gamma = np.sort(discriminantScore);
     eps=0.1;
@@ -213,6 +219,7 @@ for N in N_Loop:
         P_Err[i]=pFP[i]*p[0]+pFN[i]*p[1];
         
     Min_P_Err=min(P_Err);
+    
     Min_P_Err_ind = [i for i, v in enumerate(P_Err) if v == Min_P_Err];
     Best_Gamma=mid_gamma[Min_P_Err_ind];
     
@@ -267,6 +274,7 @@ for N in N_Loop:
     plt.ylim((Low_Lim, Up_Lim))
     plt.axis('square')
         
+    
     Fig_Num=Fig_Num+1;
     plt.figure(Fig_Num)
     plt.title("Classification")
@@ -305,10 +313,7 @@ for N in N_Loop:
     
     print("Finished Q1 part 1")
     
-    ################################################################
-    #                  Question 1 - Part 2                         #
-    ################################################################ 
-
+    
     print("Begin Q1 part 2")
     
     #---EM For GMM---#
@@ -401,6 +406,7 @@ for N in N_Loop:
         Est_P_Err[i]=Est_pFP[i]*p[0]+Est_pFN[i]*p[1];
         
     Est_Min_P_Err=min(Est_P_Err);
+    
     Est_Min_P_Err_ind = [i for i, v in enumerate(Est_P_Err) if v == Est_Min_P_Err];
     Est_Best_Gamma=Est_mid_gamma[Est_Min_P_Err_ind];
     
@@ -442,7 +448,8 @@ for N in N_Loop:
             Est_COLOR_L1.append(Est_Color[i]);
             Est_Indeces_L1[Est_L_Counter[1]]=i;
             Est_L_Counter[1]=Est_L_Counter[1]+1;
-             
+    
+                
     Fig_Num=Fig_Num+1;
     plt.figure(Fig_Num)     
     
@@ -455,6 +462,7 @@ for N in N_Loop:
     plt.ylim((Low_Lim, Up_Lim))
     plt.axis('square')
         
+    
     Fig_Num=Fig_Num+1;
     plt.figure(Fig_Num)
     plt.title("Q1-Part2 - Classification Using "+str(N)+" training samples")
